@@ -213,8 +213,7 @@
     const inspectionButton = document.getElementById("inspectionButton");
 
     /*
-      Replace this URL later with the exact Microsoft Forms inspection link.
-      The lift ID is added to the URL as a query parameter.
+      Replace this with your exact Microsoft Forms inspection link.
     */
     const inspectionFormBaseUrl = "https://forms.office.com/";
 
@@ -245,6 +244,8 @@
     }
 
     async function loadLiftStatus() {
+      inspectionButton.style.display = "block";
+
       if (!liftId) {
         liftIdElement.textContent = "No Lift Selected";
 
@@ -265,9 +266,6 @@
         "?lift=" +
         encodeURIComponent(liftId);
 
-      /*
-        This must match the safe filename created by the GitHub workflow.
-      */
       const safeLiftId = liftId.replace(/[^A-Za-z0-9._-]/g, "_");
       const dataUrl = "data/" + encodeURIComponent(safeLiftId) + ".json";
 
@@ -282,8 +280,11 @@
 
         const data = await response.json();
 
-        inspectorElement.textContent = data.inspector || "Not recorded";
-        recordedResultElement.textContent = data.result || "Not recorded";
+        inspectorElement.textContent =
+          data.inspector || "Not recorded";
+
+        recordedResultElement.textContent =
+          data.result || "Not recorded";
 
         const inspectionDate = normalizeDate(data.inspectionDate);
 
@@ -300,7 +301,8 @@
           return;
         }
 
-        dateElement.textContent = inspectionDate.toLocaleString();
+        dateElement.textContent =
+          inspectionDate.toLocaleString();
 
         const result = String(data.result || "")
           .trim()
@@ -321,20 +323,21 @@
           result.includes("pass") ||
           result.includes("passed")
         ) {
-         setStatus(
-  "PASSED TODAY",
-  "pass",
-  "This lift has a passing inspection recorded for today."
-);
-
-inspectionButton.style.display = "none";
-        } else {
           setStatus(
-            "FAILED TODAY",
-            "fail",
-            "This lift does not have a passing inspection recorded for today."
+            "PASSED TODAY",
+            "pass",
+            "This lift has a passing inspection recorded for today."
           );
+
+          inspectionButton.style.display = "none";
+          return;
         }
+
+        setStatus(
+          "FAILED TODAY",
+          "fail",
+          "This lift does not have a passing inspection recorded for today."
+        );
 
       } catch (error) {
         console.error(error);
