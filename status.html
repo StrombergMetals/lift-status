@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Lift Inspection Status</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f2f4f7;
+      color: #222;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #154c79;
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .content {
+      padding: 28px;
+    }
+
+    .lift-id {
+      text-align: center;
+      font-size: 30px;
+      font-weight: bold;
+      margin-bottom: 22px;
+    }
+
+    .status {
+      padding: 22px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 24px;
+    }
+
+    .status.pass {
+      background: #d9f2df;
+      color: #176b2c;
+      border: 2px solid #56a96c;
+    }
+
+    .status.fail {
+      background: #f8d7da;
+      color: #842029;
+      border: 2px solid #d96b74;
+    }
+
+    .status.expired {
+      background: #fff3cd;
+      color: #664d03;
+      border: 2px solid #d6b64c;
+    }
+
+    .status.loading {
+      background: #e7f1ff;
+      color: #084298;
+      border: 2px solid #6ea8d9;
+    }
+
+    .status.error {
+      background: #eeeeee;
+      color: #444;
+      border: 2px solid #999;
+    }
+
+    .details {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    .details td {
+      padding: 13px 8px;
+      border-bottom: 1px solid #ddd;
+      vertical-align: top;
+    }
+
+    .details td:first-child {
+      width: 42%;
+      font-weight: bold;
+    }
+
+    .button {
+      display: block;
+      width: 100%;
+      padding: 17px;
+      border-radius: 10px;
+      background: #154c79;
+      color: white;
+      text-decoration: none;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .button:hover {
+      background: #103957;
+    }
+
+    .message {
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 23px;
+      }
+
+      .lift-id {
+        font-size: 25px;
+      }
+
+      .status {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="header">
+      <h1>Lift Inspection Status</h1>
+    </div>
+
+    <div class="content">
+      <div class="lift-id" id="liftId">Loading lift...</div>
+
+      <div class="status loading" id="status">
+        LOADING
+      </div>
+
+      <div class="message" id="message">
+        Retrieving the latest inspection record.
+      </div>
+
+      <table class="details">
+        <tr>
+          <td>Inspector</td>
+          <td id="inspector">—</td>
+        </tr>
+
+        <tr>
+          <td>Inspection Date</td>
+          <td id="inspectionDate">—</td>
+        </tr>
+
+        <tr>
+          <td>Recorded Result</td>
+          <td id="recordedResult">—</td>
+        </tr>
+      </table>
+
+      <a
+        class="button"
+        id="inspectionButton"
+        href="#"
+      >
+        INSPECT THIS LIFT
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const liftId = params.get("lift");
+
+    const liftIdElement = document.getElementById("liftId");
+    const statusElement = document.getElementById("status");
+    const messageElement = document.getElementById("message");
+    const inspectorElement = document.getElementById("inspector");
+    const dateElement = document.getElementById("inspectionDate");
+    const recordedResultElement = document.getElementById("recordedResult");
+    const inspectionButton = document.getElementById("inspectionButton");
+
+    /*
+      Replace this URL later with the exact Microsoft Forms inspection link.
+      The lift ID is added to the URL as a query parameter.
+    */
+    const inspectionFormBaseUrl = "https://forms.office.com/";
+
+    function setStatus(text, className, message) {
+      statusElement.textContent = text;
+      statusElement.className = "status " + className;
+      messageElement.textContent = message;
+    }
+
+    function normalizeDate(dateValue) {
+      const date = new Date(dateValue);
+
+      if (Number.isNaN(date.getTime())) {
+        return null;
+      }
+
+      return date;
+    }
+
+    function isToday(date) {
+      const now = new Date();
+
+      return (
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate()
+      );
+    }
+
+    async function loadLiftStatus() {
+      if (!liftId) {
+        liftIdElement.textContent = "No Lift Selected";
+
+        setStatus(
+          "LIFT ID MISSING",
+          "error",
+          "This link does not contain a lift number."
+        );
+
+        inspectionButton.style.display = "none";
+        return;
+      }
+
+      liftIdElement.textContent = "Lift " + liftId;
+
+      inspectionButton.href =
+        inspectionFormBaseUrl +
+        "?lift=" +
+        encodeURIComponent(liftId);
+
+      /*
+        This must match the safe filename created by the GitHub workflow.
+      */
+      const safeLiftId = liftId.replace(/[^A-Za-z0-9._-]/g, "_");
+      const dataUrl = "data/" + encodeURIComponent(safeLiftId) + ".json";
+
+      try {
+        const response = await fetch(dataUrl + "?time=" + Date.now(), {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("Lift data file was not found.");
+        }
+
+        const data = await response.json();
+
+        inspectorElement.textContent = data.inspector || "Not recorded";
+        recordedResultElement.textContent = data.result || "Not recorded";
+
+        const inspectionDate = normalizeDate(data.inspectionDate);
+
+        if (!inspectionDate) {
+          dateElement.textContent =
+            data.inspectionDate || "Invalid date";
+
+          setStatus(
+            "DATE ERROR",
+            "error",
+            "The inspection record exists, but the inspection date could not be read."
+          );
+
+          return;
+        }
+
+        dateElement.textContent = inspectionDate.toLocaleString();
+
+        const result = String(data.result || "")
+          .trim()
+          .toLowerCase();
+
+        if (!isToday(inspectionDate)) {
+          setStatus(
+            "NOT INSPECTED TODAY",
+            "expired",
+            "The latest stored inspection is from a previous day."
+          );
+
+          return;
+        }
+
+        if (
+          result.includes("yes") ||
+          result.includes("pass") ||
+          result.includes("passed")
+        ) {
+          setStatus(
+            "PASSED TODAY",
+            "pass",
+            "This lift has a passing inspection recorded for today."
+          );
+        } else {
+          setStatus(
+            "FAILED TODAY",
+            "fail",
+            "This lift does not have a passing inspection recorded for today."
+          );
+        }
+
+      } catch (error) {
+        console.error(error);
+
+        setStatus(
+          "NO INSPECTION FOUND",
+          "error",
+          "No inspection record was found for this lift."
+        );
+      }
+    }
+
+    loadLiftStatus();
+  </script>
+
+</body>
+</html>
