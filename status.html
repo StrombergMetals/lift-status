@@ -321,11 +321,13 @@
           result.includes("pass") ||
           result.includes("passed")
         ) {
-          setStatus(
-            "PASSED TODAY",
-            "pass",
-            "This lift has a passing inspection recorded for today."
-          );
+         setStatus(
+  "PASSED TODAY",
+  "pass",
+  "This lift has a passing inspection recorded for today."
+);
+
+inspectionButton.style.display = "none";
         } else {
           setStatus(
             "FAILED TODAY",
