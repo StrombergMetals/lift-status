@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <title>Lift Inspection Status</title>
 
   <style>
@@ -356,7 +359,26 @@
       }
     }
 
+  loadLiftStatus();
+
+// Check again when Safari restores the page
+window.addEventListener("pageshow", function () {
     loadLiftStatus();
+});
+
+// Check again when returning from Microsoft Forms
+document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) {
+        loadLiftStatus();
+    }
+});
+
+// Check GitHub every 5 seconds while the page stays open
+setInterval(function () {
+    if (!document.hidden) {
+        loadLiftStatus();
+    }
+}, 5000);
   </script>
 
 </body>
