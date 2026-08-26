@@ -7,13 +7,17 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: lift-status-updates
+  queue: max
+
 jobs:
   update-status:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create lift data file
         shell: bash
