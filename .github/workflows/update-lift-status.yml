@@ -50,6 +50,7 @@ jobs:
             }' > "data/${SAFE_LIFT_ID}.json"
 
       - name: Commit updated lift data
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -58,7 +59,13 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
-          else
-            git commit -m "Update lift inspection status"
-            git push
+            exit 0
           fi
+
+          git commit -m "Update lift inspection status"
+
+          echo "Getting latest version of main..."
+          git pull --rebase origin main
+
+          echo "Pushing lift status..."
+          git push origin main
