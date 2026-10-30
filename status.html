@@ -221,10 +221,9 @@
     const recordedResultElement = document.getElementById("recordedResult");
     const inspectionButton = document.getElementById("inspectionButton");
 
-    /*
-      Replace this with your exact Microsoft Forms inspection link.
-    */
-    const inspectionFormBaseUrl = "https://forms.cloud.microsoft/r/5RmzRba5va";
+    // Microsoft Forms V2: pre-fill the Lift ID from this GitHub page's ?lift= parameter.
+    const inspectionFormBaseUrl = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=n4QcpsnSSUyyvJ0a9R1L6l5jABpoi0JPpkBY0VXJdUBUNE84MVRVS0NTMzU0NUpWUEVWRTZURVBTSi4u";
+    const liftIdQuestionKey = "r7ab4b14ce49f4196927fcc8a06cccda9";
 
     function setStatus(text, className, message) {
       statusElement.textContent = text;
@@ -270,10 +269,9 @@
 
       liftIdElement.textContent = "Lift " + liftId;
 
-      inspectionButton.href =
-        inspectionFormBaseUrl +
-        "?lift=" +
-        encodeURIComponent(liftId);
+      const inspectionFormUrl = new URL(inspectionFormBaseUrl);
+      inspectionFormUrl.searchParams.set(liftIdQuestionKey, liftId);
+      inspectionButton.href = inspectionFormUrl.toString();
 
       const safeLiftId = liftId.replace(/[^A-Za-z0-9._-]/g, "_");
       const dataUrl = "data/" + encodeURIComponent(safeLiftId) + ".json";
