@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stromberg Lift QR Label Generator</title>
 <style>
-:root{font-family:Arial,Helvetica,sans-serif;color:#16243a}*{box-sizing:border-box}body{margin:0;background:#f1f4f8;padding:24px}.shell{max-width:650px;margin:auto;background:white;border-radius:14px;padding:28px;box-shadow:0 5px 22px #0001}h1{margin:0 0 8px;color:#154c79}p{line-height:1.45}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}label{display:block;font-size:14px;font-weight:bold;margin:0 0 7px}input{font-size:20px;padding:12px;border:1px solid #a9b7c6;border-radius:7px;flex:1;min-width:180px}button,a.action{background:#154c79;color:white;border:0;border-radius:7px;padding:13px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none}button:disabled{opacity:.5;cursor:default}.label{border:2px solid #0e3556;margin:20px auto 16px;padding:20px;width:360px;max-width:100%;text-align:center;background:#fff}.brand{font-size:20px;font-weight:bold;color:#154c79}.lift{font-size:30px;font-weight:bold;padding:10px 0}.qr{display:flex;justify-content:center;min-height:240px;align-items:center}.qr canvas,.qr img{max-width:100%;height:auto}.hint{font-size:12px;color:#56616f;overflow-wrap:anywhere}.actions{display:flex;gap:12px;flex-wrap:wrap}.notice{color:#8a301e}.status{font-size:14px;color:#51616f}@media print{body{background:white;padding:0}.shell{box-shadow:none;padding:0}h1,.intro,.controls,.actions,.status,.notice{display:none!important}.label{margin:0;border:2px solid black;break-inside:avoid}}
+:root{font-family:Arial,Helvetica,sans-serif;color:#16243a}*{box-sizing:border-box}body{margin:0;background:#f1f4f8;padding:24px}.shell{max-width:650px;margin:auto;background:white;border-radius:14px;padding:28px;box-shadow:0 5px 22px #0001}h1{margin:0 0 8px;color:#154c79}p{line-height:1.45}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}label{display:block;font-size:14px;font-weight:bold;margin:0 0 7px}input{font-size:20px;padding:12px;border:1px solid #a9b7c6;border-radius:7px;flex:1;min-width:180px}button,a.action{background:#154c79;color:white;border:0;border-radius:7px;padding:13px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none}button:disabled{opacity:.5;cursor:default}.label{border:2px solid #0e3556;margin:20px auto 16px;padding:20px;width:360px;max-width:100%;text-align:center;background:#fff}.logo-wrap{display:flex;justify-content:center;align-items:center;margin-bottom:8px;min-height:70px}.logo{print-color-adjust:exact;-webkit-print-color-adjust:exact;max-width:220px;max-height:70px;width:auto;height:auto;display:block}.brand{font-size:20px;font-weight:bold;color:#154c79}.lift{font-size:30px;font-weight:bold;padding:10px 0}.qr{display:flex;justify-content:center;min-height:240px;align-items:center}.qr canvas,.qr img{max-width:100%;height:auto}.hint{font-size:12px;color:#56616f;overflow-wrap:anywhere}.actions{display:flex;gap:12px;flex-wrap:wrap}.notice{color:#8a301e}.status{font-size:14px;color:#51616f}@media print{body{background:white;padding:0}.shell{box-shadow:none;padding:0}h1,.intro,.controls,.actions,.status,.notice{display:none!important}.label{margin:0;border:2px solid black;break-inside:avoid}.logo-wrap,.logo{display:flex!important;visibility:visible!important}.logo{display:block!important}}
 </style>
 </head>
 <body>
@@ -15,12 +15,14 @@
 <div class="controls"><input id="lift" inputmode="text" autocomplete="off" maxlength="100" placeholder="e.g. 11545204"><button id="generate">Generate QR</button></div>
 <p class="notice" id="error" role="alert" hidden></p>
 <section class="label" aria-label="Printable lift label">
+<div class="logo-wrap"><img class="logo" src="https://strombergmetals.github.io/lift-status/Stromberg_Logo.png" alt="Stromberg Metal Works logo"></div>
 <div class="brand">STROMBERG METAL WORKS</div>
 <div class="lift" id="liftLabel">LIFT ID</div>
 <div class="qr" id="qr"><span class="status">Enter a lift ID above</span></div>
 <div class="hint">SCAN FOR DAILY LIFT INSPECTION</div>
 </section>
 <div class="actions"><button id="print" disabled>Print Label</button><button id="png" disabled>Save QR as PNG</button><a id="visit" class="action" target="_blank" rel="noopener noreferrer" hidden>Open Status Page</a></div>
+<p class="status">Label version: Logo v3. If the Stromberg logo is not visible above the lift ID, refresh the page with Ctrl+F5.</p>
 <p class="status">QR content: <span id="url">—</span></p>
 <p class="status">This page loads the open-source QRCode.js library from cdnjs. An internet connection is needed to generate QR codes.</p>
 </main>
