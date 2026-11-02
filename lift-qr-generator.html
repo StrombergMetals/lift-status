@@ -73,14 +73,14 @@ button:disabled{opacity:.5;cursor:default}
 <div class="actions"><button id="print" disabled>Print This Lift</button><button id="png" disabled class="secondary">Save QR as PNG</button><a id="visit" class="action" target="_blank" rel="noopener noreferrer" hidden>Open Status Page</a></div>
 <hr class="section-divider">
 <h2>Print multiple lifts</h2>
-<p>Select the lifts you need. One selected lift prints in the top-left quarter of a sheet; up to four labels print per sheet.</p>
+<p id="listHelp">Open this page using Print QR Codes in Power Apps to load your current SharePoint lifts. One selected lift prints in the top-left quarter of a sheet; up to four labels print per sheet.</p>
 <div class="picker">
  <div class="selection-actions"><button type="button" id="selectAll" class="secondary">Select All</button><button type="button" id="clearSelection" class="secondary">Clear Selection</button></div>
  <div class="lift-list" id="liftList" aria-label="Choose lifts to print"></div>
  <p class="status" id="selectedCount" aria-live="polite">0 lifts selected</p>
- <div class="actions"><button type="button" id="printSelected" disabled>Print Selected</button><button type="button" id="printAll">Print All Lifts</button></div>
+ <div class="actions"><button type="button" id="printSelected" disabled>Print Selected</button><button type="button" id="printAll" disabled>Print All Lifts</button></div>
 </div>
-<p class="status">The multiple-lift list is maintained in this HTML file. If a lift is added or removed in Power Apps, update the list here too.</p>
+<p class="status">The multiple-lift list comes from the Lift Equipment SharePoint data sent by Power Apps. This page does not independently connect to SharePoint.</p>
 <p class="status">For best results: Letter paper, portrait, 100% scale, browser headers/footers off. Allow background graphics if needed for branding. If the Stromberg logo does not appear, refresh with Ctrl+F5.</p>
 <p class="status">QR content: <span id="url">—</span></p>
 <p class="status">QR generation uses the open-source QRCode.js library from cdnjs and requires internet access.</p>
@@ -91,8 +91,8 @@ button:disabled{opacity:.5;cursor:default}
 'use strict';
 const base='https://strombergmetals.github.io/lift-status/status.html';
 const logo='https://strombergmetals.github.io/lift-status/Stromberg_Logo.png';
-// Update this list when your fleet changes. IDs must match Power Apps/SharePoint exactly.
-const liftIds=['11545204','11545196','11528722','11523389','11523470','11608400','Z717362','11603158','11528721','11608401','ZAA20153'];
+// Populated exclusively from the ?lifts= query parameter sent by Power Apps.
+let liftIds=[];
 const input=document.getElementById('lift');
 const error=document.getElementById('error');
 const qr=document.getElementById('qr');
@@ -122,12 +122,23 @@ function updateCount(){
  const count=selectedIds().length;
  document.getElementById('selectedCount').textContent=count+' lift'+(count===1?'':'s')+' selected';
  document.getElementById('printSelected').disabled=count===0;
+ document.getElementById('printSelected').textContent='Print Selected ('+count+')';
 }
-for(const id of liftIds){
- const label=document.createElement('label');label.className='lift-option';
- const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=id;checkbox.addEventListener('change',updateCount);
- const text=document.createElement('span');text.textContent=id;
- label.append(checkbox,text);list.append(label);
+function populateLiftList(ids){
+ liftIds=ids;
+ list.replaceChildren();
+ for(const id of liftIds){
+  const label=document.createElement('label');label.className='lift-option';
+  const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=id;checkbox.checked=true;
+  checkbox.addEventListener('change',updateCount);
+  const text=document.createElement('span');text.textContent=id;
+  label.append(checkbox,text);list.append(label);
+ }
+ document.getElementById('printAll').disabled=liftIds.length===0;
+ document.getElementById('listHelp').textContent=liftIds.length
+  ? 'These '+liftIds.length+' lifts were sent from Power Apps. Uncheck any you do not need, or print all four per sheet.'
+  : 'No lift list supplied. Use Print QR Codes in Power Apps to load the current SharePoint lifts.';
+ updateCount();
 }
 function makeLabel(id){
  const label=document.createElement('section');label.className='label';label.setAttribute('aria-label','Lift '+id+' QR label');
@@ -172,8 +183,8 @@ document.getElementById('png').addEventListener('click',()=>{
  else if(img){link.href=img.src;link.click();}
  else fail('QR code not available for download.');
 });
-// Power Apps can pass a comma-separated set of IDs via ?lifts=ID1,ID2,...
-// The existing ?lift=ID link remains unchanged for the Reprint QR button.
+// The existing ?lift=ID link continues to support single-lift Reprint QR.
+// Power Apps provides the complete SharePoint list via ?lifts=ID1,ID2,...
 const params=new URLSearchParams(location.search);
 const supplied=params.get('lift');
 if(supplied){input.value=supplied;generate();}
@@ -181,24 +192,13 @@ const incoming=params.get('lifts');
 if(incoming!==null){
  const ids=[...new Set(incoming.split(',').map(id=>id.trim()).filter(Boolean))];
  if(ids.length===0 || ids.some(id=>!validId(id))){
-  fail('The lift selection link contains an invalid or missing lift ID.');
+  fail('The lift list from Power Apps contains an invalid or missing lift ID.');
  }else{
-  // Power Apps/SharePoint is the source of truth, including new lift IDs.
-  // Add any incoming IDs that are not in the HTML's default checkbox list.
-  for(const id of ids){
-   if(!Array.from(list.querySelectorAll('input')).some(box=>box.value===id)){
-    const label=document.createElement('label');label.className='lift-option';
-    const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=id;
-    checkbox.addEventListener('change',updateCount);
-    const name=document.createElement('span');name.textContent=id;
-    label.append(checkbox,name);list.append(label);
-   }
-  }
-  list.querySelectorAll('input').forEach(box=>{box.checked=ids.includes(box.value);});
-  updateCount();
-  document.getElementById('printSelected').textContent='Print Selected ('+ids.length+')';
+  populateLiftList(ids);
   document.querySelector('.picker').scrollIntoView({block:'start'});
  }
+}else{
+ populateLiftList([]);
 }
 </script>
 </body>
