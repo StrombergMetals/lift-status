@@ -1,106 +1,169 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stromberg Lift QR Label Generator</title>
 <style>
 :root{font-family:Arial,Helvetica,sans-serif;color:#16243a}
 *{box-sizing:border-box}
 body{margin:0;background:#f1f4f8;padding:24px}
-.shell{max-width:650px;margin:auto;background:white;border-radius:14px;padding:28px;box-shadow:0 5px 22px #0001}
+.shell{max-width:760px;margin:auto;background:white;border-radius:14px;padding:28px;box-shadow:0 5px 22px #0001}
 h1{margin:0 0 8px;color:#154c79}
+h2{font-size:19px;color:#154c79;margin:26px 0 8px}
 p{line-height:1.45}
-.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}
-label{display:block;font-size:14px;font-weight:bold;margin:0 0 7px}
-input{font-size:20px;padding:12px;border:1px solid #a9b7c6;border-radius:7px;flex:1;min-width:180px}
-button,a.action{background:#154c79;color:white;border:0;border-radius:7px;padding:13px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none}
+.controls,.actions,.selection-actions{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}
+label.field-label{display:block;font-size:14px;font-weight:bold;margin:0 0 7px}
+input[type=text]{font-size:20px;padding:12px;border:1px solid #a9b7c6;border-radius:7px;flex:1;min-width:180px}
+button,a.action{background:#154c79;color:white;border:0;border-radius:7px;padding:12px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none}
+button.secondary{background:#e5eef6;color:#154c79}
 button:disabled{opacity:.5;cursor:default}
 .label{border:2px solid #0e3556;margin:20px auto 16px;padding:20px;width:360px;max-width:100%;text-align:center;background:#fff}
 .logo-wrap{display:flex;justify-content:center;align-items:center;margin-bottom:8px;min-height:70px}
 .logo{print-color-adjust:exact;-webkit-print-color-adjust:exact;max-width:220px;max-height:70px;width:auto;height:auto;display:block}
 .brand{font-size:20px;font-weight:bold;color:#154c79}
-.lift{font-size:30px;font-weight:bold;padding:10px 0}
+.lift{font-size:30px;font-weight:bold;padding:10px 0;overflow-wrap:anywhere}
 .qr{display:flex;justify-content:center;min-height:240px;align-items:center}
 .qr canvas,.qr img{max-width:100%;height:auto}
 .hint{font-size:12px;color:#56616f;overflow-wrap:anywhere}
-.actions{display:flex;gap:12px;flex-wrap:wrap}
-.notice{color:#8a301e}
+.notice{color:#8a301e;font-weight:bold}
 .status{font-size:14px;color:#51616f}
-
-/* A single label prints at the same quarter-page size as a four-up sheet.
-   The 0.25in page margin helps avoid clipping on ordinary printers. */
+.picker{border:1px solid #d1dce6;border-radius:10px;padding:15px;background:#f9fbfd}
+.lift-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px;margin:12px 0}
+.lift-option{display:flex;align-items:center;gap:10px;padding:7px 4px;cursor:pointer;font-size:16px}
+.lift-option input{width:19px;height:19px;accent-color:#154c79}
+.section-divider{border:0;border-top:1px solid #dbe3ea;margin:26px 0 18px}
+#printPages{display:none}
+/* Exact same printable size for one, selected, or all labels.
+   Four 4 x 5.25 inch labels fit within the 8 x 10.5 inch printable area. */
 @page{size:letter portrait;margin:0.25in}
 @media print{
-  html,body{background:#fff!important;margin:0;padding:0;width:100%;}
-  .shell{max-width:none;width:100%;box-shadow:none;border-radius:0;margin:0;padding:0;}
-  h1,.intro,.controls,.actions,.status,.notice,main>label{display:none!important;}
-  .label{
-    box-sizing:border-box;
-    width:4in;
-    height:5.25in;
-    max-width:none;
-    margin:0;
-    padding:0.17in;
-    border:2px solid #000;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-    break-inside:avoid;
-    page-break-inside:avoid;
-  }
-  .logo-wrap{display:flex!important;justify-content:center;align-items:center;min-height:0;margin-bottom:0.08in;visibility:visible!important;}
-  .logo{display:block!important;visibility:visible!important;max-width:2.5in;max-height:0.7in;width:auto;height:auto;}
-  .brand{font-size:15px;}
-  .lift{font-size:24px;padding:0.12in 0;overflow-wrap:anywhere;}
-  .qr{min-height:0;width:2.3in;height:2.3in;flex:none;}
-  .qr canvas,.qr img{display:block;width:2.3in!important;height:2.3in!important;max-width:none!important;}
-  .hint{font-size:11px;margin-top:0.10in;}
+ html,body{background:#fff!important;margin:0;padding:0;width:100%}
+ .shell{display:none!important}
+ #printPages{display:block!important;width:8in;margin:0;padding:0}
+ .print-page{display:grid;grid-template-columns:4in 4in;grid-template-rows:5.25in 5.25in;width:8in;height:10.5in;margin:0;padding:0;break-after:page;page-break-after:always}
+ .print-page:last-child{break-after:auto;page-break-after:auto}
+ .print-page .label{box-sizing:border-box;width:4in;height:5.25in;max-width:none;margin:0;padding:0.17in;border:2px solid #000;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;break-inside:avoid;page-break-inside:avoid}
+ .print-page .logo-wrap{display:flex!important;justify-content:center;align-items:center;min-height:0;margin-bottom:0.08in;visibility:visible!important}
+ .print-page .logo{display:block!important;visibility:visible!important;max-width:2.5in;max-height:0.7in;width:auto;height:auto}
+ .print-page .brand{font-size:15px}
+ .print-page .lift{font-size:24px;padding:0.12in 0;overflow-wrap:anywhere}
+ .print-page .qr{min-height:0;width:2.3in;height:2.3in;flex:none}
+ .print-page .qr canvas,.print-page .qr img{display:block;width:2.3in!important;height:2.3in!important;max-width:none!important}
+ .print-page .hint{font-size:11px;margin-top:0.1in}
 }
+@media(max-width:520px){body{padding:10px}.shell{padding:18px}.lift-list{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main class="shell">
 <h1>Stromberg Lift QR Labels</h1>
-<p class="intro">Enter the lift ID and print or save its inspection QR code. The code opens your existing GitHub status page. Adding an ID here does <strong>not</strong> register it in SharePoint.</p>
-<label for="lift">Lift ID</label>
-<div class="controls"><input id="lift" inputmode="text" autocomplete="off" maxlength="100" placeholder="e.g. 11545204"><button id="generate">Generate QR</button></div>
+<p class="intro">Generate or reprint an individual lift QR code, or select several lifts to print four quarter-page labels per sheet. QR codes open your existing GitHub lift status page. Creating a QR label here does <strong>not</strong> register a lift in SharePoint.</p>
+<h2>Single lift</h2>
+<label class="field-label" for="lift">Lift ID</label>
+<div class="controls"><input type="text" id="lift" autocomplete="off" maxlength="100" placeholder="e.g. 11545204"><button id="generate">Generate QR</button></div>
 <p class="notice" id="error" role="alert" hidden></p>
-<section class="label" aria-label="Printable lift label">
-<div class="logo-wrap"><img class="logo" src="https://strombergmetals.github.io/lift-status/Stromberg_Logo.png" alt="Stromberg Metal Works logo"></div>
-<div class="brand">STROMBERG METAL WORKS</div>
-<div class="lift" id="liftLabel">LIFT ID</div>
-<div class="qr" id="qr"><span class="status">Enter a lift ID above</span></div>
-<div class="hint">SCAN FOR DAILY LIFT INSPECTION</div>
+<section class="label" aria-label="Single lift label preview">
+ <div class="logo-wrap"><img class="logo" src="https://strombergmetals.github.io/lift-status/Stromberg_Logo.png" alt="Stromberg Metal Works logo"></div>
+ <div class="brand">STROMBERG METAL WORKS</div>
+ <div class="lift" id="liftLabel">LIFT ID</div>
+ <div class="qr" id="qr"><span class="status">Enter a lift ID above</span></div>
+ <div class="hint">SCAN FOR DAILY LIFT INSPECTION</div>
 </section>
-<div class="actions"><button id="print" disabled>Print Label</button><button id="png" disabled>Save QR as PNG</button><a id="visit" class="action" target="_blank" rel="noopener noreferrer" hidden>Open Status Page</a></div>
-<p class="status">Label version: Logo v3. If the Stromberg logo is not visible above the lift ID, refresh the page with Ctrl+F5.</p>
+<div class="actions"><button id="print" disabled>Print This Lift</button><button id="png" disabled class="secondary">Save QR as PNG</button><a id="visit" class="action" target="_blank" rel="noopener noreferrer" hidden>Open Status Page</a></div>
+<hr class="section-divider">
+<h2>Print multiple lifts</h2>
+<p>Select the lifts you need. One selected lift prints in the top-left quarter of a sheet; up to four labels print per sheet.</p>
+<div class="picker">
+ <div class="selection-actions"><button type="button" id="selectAll" class="secondary">Select All</button><button type="button" id="clearSelection" class="secondary">Clear Selection</button></div>
+ <div class="lift-list" id="liftList" aria-label="Choose lifts to print"></div>
+ <p class="status" id="selectedCount" aria-live="polite">0 lifts selected</p>
+ <div class="actions"><button type="button" id="printSelected" disabled>Print Selected</button><button type="button" id="printAll">Print All Lifts</button></div>
+</div>
+<p class="status">The multiple-lift list is maintained in this HTML file. If a lift is added or removed in Power Apps, update the list here too.</p>
+<p class="status">For best results: Letter paper, portrait, 100% scale, browser headers/footers off. Allow background graphics if needed for branding. If the Stromberg logo does not appear, refresh with Ctrl+F5.</p>
 <p class="status">QR content: <span id="url">—</span></p>
-<p class="status">This page loads the open-source QRCode.js library from cdnjs. An internet connection is needed to generate QR codes.</p>
+<p class="status">QR generation uses the open-source QRCode.js library from cdnjs and requires internet access.</p>
 </main>
+<div id="printPages" aria-hidden="true"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 'use strict';
-const base = 'https://strombergmetals.github.io/lift-status/status.html';
-const input=document.getElementById('lift');const error=document.getElementById('error');const qr=document.getElementById('qr');
+const base='https://strombergmetals.github.io/lift-status/status.html';
+const logo='https://strombergmetals.github.io/lift-status/Stromberg_Logo.png';
+// Update this list when your fleet changes. IDs must match Power Apps/SharePoint exactly.
+const liftIds=['11545204','11545196','11528722','11523389','11523470','11608400','Z717362','11603158','11528721','11608401','ZAA20153'];
+const input=document.getElementById('lift');
+const error=document.getElementById('error');
+const qr=document.getElementById('qr');
+const list=document.getElementById('liftList');
+const printPages=document.getElementById('printPages');
 let current='';
-function fail(msg){error.hidden=false;error.textContent=msg;document.getElementById('print').disabled=true;document.getElementById('png').disabled=true;document.getElementById('visit').hidden=true;}
+const validId=id=>/^[A-Za-z0-9._-]{1,100}$/.test(id);
+function urlFor(id){const url=new URL(base);url.searchParams.set('lift',id);return url.href;}
+function fail(message){error.hidden=false;error.textContent=message;}
+function clearError(){error.hidden=true;error.textContent='';}
+function ready(){if(typeof QRCode==='undefined'){fail('The QR code library did not load. Check your internet connection and reload.');return false;}return true;}
 function generate(){
- const id=input.value.trim();
- error.hidden=true;
- if(!id || !/^[A-Za-z0-9._-]{1,100}$/.test(id)){fail('Enter a lift ID using only letters, numbers, periods, underscores, or hyphens.');return;}
- if(typeof QRCode==='undefined'){fail('The QR generator library did not load. Check your internet connection.');return;}
- const url=new URL(base);url.searchParams.set('lift',id);
- current=id;document.getElementById('liftLabel').textContent='LIFT '+id;
- document.getElementById('url').textContent=url.href;
- qr.replaceChildren();new QRCode(qr,{text:url.href,width:240,height:240,correctLevel:QRCode.CorrectLevel.H});
- document.getElementById('print').disabled=false;document.getElementById('png').disabled=false;
- const visit=document.getElementById('visit');visit.href=url.href;visit.hidden=false;
+ const id=input.value.trim();clearError();
+ if(!validId(id)){fail('Enter a lift ID using only letters, numbers, periods, underscores, or hyphens.');return;}
+ if(!ready())return;
+ current=id;
+ document.getElementById('liftLabel').textContent='LIFT '+id;
+ document.getElementById('url').textContent=urlFor(id);
+ qr.replaceChildren();
+ new QRCode(qr,{text:urlFor(id),width:240,height:240,correctLevel:QRCode.CorrectLevel.H});
+ document.getElementById('print').disabled=false;
+ document.getElementById('png').disabled=false;
+ const visit=document.getElementById('visit');visit.href=urlFor(id);visit.hidden=false;
+}
+function selectedIds(){return Array.from(list.querySelectorAll('input[type="checkbox"]:checked'),box=>box.value);}
+function updateCount(){
+ const count=selectedIds().length;
+ document.getElementById('selectedCount').textContent=count+' lift'+(count===1?'':'s')+' selected';
+ document.getElementById('printSelected').disabled=count===0;
+}
+for(const id of liftIds){
+ const label=document.createElement('label');label.className='lift-option';
+ const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=id;checkbox.addEventListener('change',updateCount);
+ const text=document.createElement('span');text.textContent=id;
+ label.append(checkbox,text);list.append(label);
+}
+function makeLabel(id){
+ const label=document.createElement('section');label.className='label';label.setAttribute('aria-label','Lift '+id+' QR label');
+ const logoWrap=document.createElement('div');logoWrap.className='logo-wrap';
+ const image=document.createElement('img');image.className='logo';image.src=logo;image.alt='Stromberg Metal Works logo';logoWrap.append(image);
+ const brand=document.createElement('div');brand.className='brand';brand.textContent='STROMBERG METAL WORKS';
+ const lift=document.createElement('div');lift.className='lift';lift.textContent='LIFT '+id;
+ const qrBox=document.createElement('div');qrBox.className='qr';
+ new QRCode(qrBox,{text:urlFor(id),width:240,height:240,correctLevel:QRCode.CorrectLevel.H});
+ const hint=document.createElement('div');hint.className='hint';hint.textContent='SCAN FOR DAILY LIFT INSPECTION';
+ label.append(logoWrap,brand,lift,qrBox,hint);
+ return label;
+}
+async function printLifts(ids){
+ clearError();
+ if(!ids.length){fail('Select at least one lift to print.');return;}
+ if(!ready())return;
+ printPages.replaceChildren();
+ for(let start=0;start<ids.length;start+=4){
+  const page=document.createElement('div');page.className='print-page';
+  ids.slice(start,start+4).forEach(id=>page.append(makeLabel(id)));
+  printPages.append(page);
+ }
+ // Give the browser time to finish generating QR canvases and fetching logos.
+ const images=Array.from(printPages.querySelectorAll('img'));
+ await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});})));
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ window.print();
 }
 document.getElementById('generate').addEventListener('click',generate);
 input.addEventListener('keydown',e=>{if(e.key==='Enter')generate();});
-document.getElementById('print').addEventListener('click',()=>window.print());
+document.getElementById('print').addEventListener('click',()=>{if(current)printLifts([current]);});
+document.getElementById('selectAll').addEventListener('click',()=>{list.querySelectorAll('input').forEach(box=>box.checked=true);updateCount();});
+document.getElementById('clearSelection').addEventListener('click',()=>{list.querySelectorAll('input').forEach(box=>box.checked=false);updateCount();});
+document.getElementById('printSelected').addEventListener('click',()=>printLifts(selectedIds()));
+document.getElementById('printAll').addEventListener('click',()=>printLifts(liftIds));
 document.getElementById('png').addEventListener('click',()=>{
  if(!current)return;
  const canvas=qr.querySelector('canvas');const img=qr.querySelector('img');
@@ -109,7 +172,34 @@ document.getElementById('png').addEventListener('click',()=>{
  else if(img){link.href=img.src;link.click();}
  else fail('QR code not available for download.');
 });
-const supplied=new URLSearchParams(location.search).get('lift');if(supplied){input.value=supplied;generate();}
+// Power Apps can pass a comma-separated set of IDs via ?lifts=ID1,ID2,...
+// The existing ?lift=ID link remains unchanged for the Reprint QR button.
+const params=new URLSearchParams(location.search);
+const supplied=params.get('lift');
+if(supplied){input.value=supplied;generate();}
+const incoming=params.get('lifts');
+if(incoming!==null){
+ const ids=[...new Set(incoming.split(',').map(id=>id.trim()).filter(Boolean))];
+ if(ids.length===0 || ids.some(id=>!validId(id))){
+  fail('The lift selection link contains an invalid or missing lift ID.');
+ }else{
+  // Power Apps/SharePoint is the source of truth, including new lift IDs.
+  // Add any incoming IDs that are not in the HTML's default checkbox list.
+  for(const id of ids){
+   if(!Array.from(list.querySelectorAll('input')).some(box=>box.value===id)){
+    const label=document.createElement('label');label.className='lift-option';
+    const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=id;
+    checkbox.addEventListener('change',updateCount);
+    const name=document.createElement('span');name.textContent=id;
+    label.append(checkbox,name);list.append(label);
+   }
+  }
+  list.querySelectorAll('input').forEach(box=>{box.checked=ids.includes(box.value);});
+  updateCount();
+  document.getElementById('printSelected').textContent='Print Selected ('+ids.length+')';
+  document.querySelector('.picker').scrollIntoView({block:'start'});
+ }
+}
 </script>
 </body>
 </html>
