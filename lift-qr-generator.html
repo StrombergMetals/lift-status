@@ -4,7 +4,60 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stromberg Lift QR Label Generator</title>
 <style>
-:root{font-family:Arial,Helvetica,sans-serif;color:#16243a}*{box-sizing:border-box}body{margin:0;background:#f1f4f8;padding:24px}.shell{max-width:650px;margin:auto;background:white;border-radius:14px;padding:28px;box-shadow:0 5px 22px #0001}h1{margin:0 0 8px;color:#154c79}p{line-height:1.45}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}label{display:block;font-size:14px;font-weight:bold;margin:0 0 7px}input{font-size:20px;padding:12px;border:1px solid #a9b7c6;border-radius:7px;flex:1;min-width:180px}button,a.action{background:#154c79;color:white;border:0;border-radius:7px;padding:13px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none}button:disabled{opacity:.5;cursor:default}.label{border:2px solid #0e3556;margin:20px auto 16px;padding:20px;width:360px;max-width:100%;text-align:center;background:#fff}.logo-wrap{display:flex;justify-content:center;align-items:center;margin-bottom:8px;min-height:70px}.logo{print-color-adjust:exact;-webkit-print-color-adjust:exact;max-width:220px;max-height:70px;width:auto;height:auto;display:block}.brand{font-size:20px;font-weight:bold;color:#154c79}.lift{font-size:30px;font-weight:bold;padding:10px 0}.qr{display:flex;justify-content:center;min-height:240px;align-items:center}.qr canvas,.qr img{max-width:100%;height:auto}.hint{font-size:12px;color:#56616f;overflow-wrap:anywhere}.actions{display:flex;gap:12px;flex-wrap:wrap}.notice{color:#8a301e}.status{font-size:14px;color:#51616f}@media print{body{background:white;padding:0}.shell{box-shadow:none;padding:0}h1,.intro,.controls,.actions,.status,.notice{display:none!important}.label{margin:0;border:2px solid black;break-inside:avoid}.logo-wrap,.logo{display:flex!important;visibility:visible!important}.logo{display:block!important}}
+:root{font-family:Arial,Helvetica,sans-serif;color:#16243a}
+*{box-sizing:border-box}
+body{margin:0;background:#f1f4f8;padding:24px}
+.shell{max-width:650px;margin:auto;background:white;border-radius:14px;padding:28px;box-shadow:0 5px 22px #0001}
+h1{margin:0 0 8px;color:#154c79}
+p{line-height:1.45}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}
+label{display:block;font-size:14px;font-weight:bold;margin:0 0 7px}
+input{font-size:20px;padding:12px;border:1px solid #a9b7c6;border-radius:7px;flex:1;min-width:180px}
+button,a.action{background:#154c79;color:white;border:0;border-radius:7px;padding:13px 16px;font-size:16px;font-weight:bold;cursor:pointer;text-decoration:none}
+button:disabled{opacity:.5;cursor:default}
+.label{border:2px solid #0e3556;margin:20px auto 16px;padding:20px;width:360px;max-width:100%;text-align:center;background:#fff}
+.logo-wrap{display:flex;justify-content:center;align-items:center;margin-bottom:8px;min-height:70px}
+.logo{print-color-adjust:exact;-webkit-print-color-adjust:exact;max-width:220px;max-height:70px;width:auto;height:auto;display:block}
+.brand{font-size:20px;font-weight:bold;color:#154c79}
+.lift{font-size:30px;font-weight:bold;padding:10px 0}
+.qr{display:flex;justify-content:center;min-height:240px;align-items:center}
+.qr canvas,.qr img{max-width:100%;height:auto}
+.hint{font-size:12px;color:#56616f;overflow-wrap:anywhere}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.notice{color:#8a301e}
+.status{font-size:14px;color:#51616f}
+
+/* A single label prints at the same quarter-page size as a four-up sheet.
+   The 0.25in page margin helps avoid clipping on ordinary printers. */
+@page{size:letter portrait;margin:0.25in}
+@media print{
+  html,body{background:#fff!important;margin:0;padding:0;width:100%;}
+  .shell{max-width:none;width:100%;box-shadow:none;border-radius:0;margin:0;padding:0;}
+  h1,.intro,.controls,.actions,.status,.notice,main>label{display:none!important;}
+  .label{
+    box-sizing:border-box;
+    width:4in;
+    height:5.25in;
+    max-width:none;
+    margin:0;
+    padding:0.17in;
+    border:2px solid #000;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .logo-wrap{display:flex!important;justify-content:center;align-items:center;min-height:0;margin-bottom:0.08in;visibility:visible!important;}
+  .logo{display:block!important;visibility:visible!important;max-width:2.5in;max-height:0.7in;width:auto;height:auto;}
+  .brand{font-size:15px;}
+  .lift{font-size:24px;padding:0.12in 0;overflow-wrap:anywhere;}
+  .qr{min-height:0;width:2.3in;height:2.3in;flex:none;}
+  .qr canvas,.qr img{display:block;width:2.3in!important;height:2.3in!important;max-width:none!important;}
+  .hint{font-size:11px;margin-top:0.10in;}
+}
 </style>
 </head>
 <body>
